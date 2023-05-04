@@ -1,43 +1,308 @@
-//PHP
-Q1)
-<html>
-<head>
-<title>Accenture</title></head>
-<body style="background-color:#4CBB17">
-<h3 style="font-size:60px; color:red; font-style:Comic Sans MS "> Accenture</h3>
-<p style=" color:blue; font-size:25px">Accenture plc is an Irish-American professional
-services company based in Dublin,
- specializing in information technology (IT) services and consulting.<br>
- As of 2022,Accenture is considered
- the largest consulting firm in the world by number of employees.<br>
- Accenture is a $61.6-billion-in-annual-revenue technology and consulting company
-incorporated in Dublin, Ireland.
- Led by Chair & CEO Julie Sweet, who prior to her promotion in 2019 served as CEO of
-Accentures business in North America,
- the Fortune Global 500 information technology services company has supplemented its
-growth
- through high-profile acquisitions like that of ad agency Droga5. With 721,000 people
-worldwide</p>
- </html> 
+Q1
+#include<stdio.h>
+
+#define size 100
+int n;
+int m;
+int avail[size];
+int max[size][size];
+int alloc[size][size];
+int need[size][size];
+int finish[size];
+int work[size];
+int safe[size];
+int sp;
+int req[size];
+int pReq;
+
+int calAfterReq();
+void calNeed();
+int calSafe();
+void getAlloc();
+void getAvail();
+void getMax();
+void getReq();
+void putAlloc();
+void putAvail();
+void putMax();
+void putNeed();
+void putSafe();
+void putWork();
+
+int main()
+{
+char choice;
+printf("Enter the number of processes:\t");
+scanf("%d",&n);
+printf("Enter the number of resources:\t");
+scanf("%d",&m);
+getAvail();
+getAlloc();
+getMax();
+calNeed();
+putAlloc();
+putAvail();
+putMax();
+putNeed();
 
 
 
+if(!calSafe())
+
+{
+printf("ERROR: System is not in safe sequence.\n");
+return;
+}
+putSafe();
+printf("Do you want to add a request?(y for yes)\t");
+scanf("%c",&choice);
+if(choice=='y' && choice=='Y')
+return 0;
+getReq();
+switch(calAfterReq())
+{
+case -1:
+puts("ERROR : Contradiction to condition request<=need.\n");
+return 1;
+case -2 :
+puts("ERROR: Contradiction to condition request<=avail.\n");
+return 1;
+}
+puts("\n\nData after processing of request:");
+
+putAvail();
+
+if(!calSafe())
+{
+printf("ERROR :System is not in safe sequence\n");
+return 1;
+}
+putSafe();
+}
+int calAfterReq()
+{
+int i,j;
+for(j=0;j<m;j++)
+{
+if(!(req[j]<=need[pReq][j]))
+return -1;
+if(!(req[j]<=avail[j]))
+return -2;
+alloc[pReq][j] +=req[j];
+avail[j]-= req[j];
+}
+}
+
+void calNeed()
+{
+int i,j;
+for(i=0;i<n;i++)
+for(j=0;j<m;j++) 
+need[i][j]=max[i][j]-alloc[i][j];
+}
+int calSafe()
+{
+int countUnfinished()
+{
+int i,unfinished;
+for(unfinished=0,i=0;i<n;i++)
+if(finish[i]==0)
+unfinished++;
+return unfinished;
+}
+
+int i,j;
+int oldUnfinished;
+int newUnfinished;
+for(j=0;j<m;j++)
+work[j]= avail[j];
+newUnfinished=n;
+
+while(1)
+{
+oldUnfinished=newUnfinished;
+for(i=0;i<n;i++)
+{
+if(finish[i])
+continue;
+for(j=0;j<m;j++)
+if(!(need[i][j]<=work[j]))
+break ;
+
+if(j==m)
+{
+safe[sp++]=i;
+for(j=0;j<m;j++)
+work[j]+=alloc[i][j];
+finish[i]=1;
+}
+}
+newUnfinished=countUnfinished();
+
+if(newUnfinished==0)
+return 1;
+else if(newUnfinished==oldUnfinished)
+return 0;
+}
+}
+void getAlloc()
+{
+int i,j;
+printf("\nEnter allocations([proc][res])\n");
+for(i=0;i<n;i++)
+for(j=0;j<m;j++)
+{
+printf("allocation[%d][%d]:\t",i,j);
+scanf("%d",&alloc[i][j]);
+}
+}
+void getAvail()
+{
+int j;
+printf("\nEnter available([res])\n");
+for(j=0;j<m;j++)
+{
+printf("available[%d]:\t",j);
+scanf("%d",&avail[j]);
+}
+}
+void getMax()
+{
+int i,j;
+printf("\nEnter maxes ([proc][res])\n");
+for(i=0;i<n;i++)
+for(j=0;j<m;j++)
+{
+printf("max[%d][%d]:\t",i,j);
+scanf("%d",&max[i][j]);
+}
+}
+
+void getReq()
+{
+int j;
+printf("\nEnter the index of process to add request for,(index starts from 0)\t");
+scanf("%d",&pReq);
+printf("Enter the request:([res])\n");
+for(j=0;j<m;j++)
+{
+printf("request[%d]:\t",j);
+scanf("%d",&req[j]);
+}
+}
+void putAlloc()
+{
+int i,j;
+printf("\nAllocations are:\n");
+for(i=0;i<n;i++)
+{
+printf("p%d\t",i);
+for(j=0;j<m;j++)
+printf("%d\t",alloc[i][j]);
+printf("\n");
+}
+}
+void putAvail()
+{
+int j;
+printf("\nAvailables are:\n");
+for(j=0;j<m;j++)
+{
+printf("%d\t",avail[j]);
+printf("\n");
+}
+}
+void putMax()
+{
+int i,j;
+printf("\nMaxes are:\n");
+for(i=0;i<n;i++)
+{
+printf("p%d\t",i);
+for(j=0;j<m;j++)
+printf("%d\t",max[i][j]);
+printf("\n");
+}
+}
+void putNeed()
+{
+int i,j;
+printf("\nNeed are:\n");
+for(i=0;i<n;i++)
+{
+printf("p%d\t",i);
+for(j=0;j<m;j++)
+printf("%d\t",need[i][j]);
+printf("\n");
+}
+}
+void putSafe()
+{
+int i;
+printf("\nThe safe sequence is:\n");
+for(i=0;i<sp;i++)
+printf("%d\t",safe[i]);
+printf("\n");
+}
+
+void putWork()
+{
+int j;
+printf("Work:\n");
+for(j=0;j<m;j++)
+{
+printf("%d\t",work[j]);
+}
+printf("\n");
+}
 
 
-//DS
-Q2A) 
-import pandas as p
-d=p.read_csv('C:\\Users\\DELL\\Untitled Folder\\Iris.csv')
-#remove id field from iris dataset
-new_data = d[["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]] 
-print(new_data)
-plt.figure(figsize = (10, 7))
-new_data.boxplot()
-Q2B)
-import pandas as p
-df = pd.read_csv('C:\\Users\\DELL\\ht&wt.csv')
-df.shape # no.of rows & cols
-df.describe() #stats data
-df.info() #features
-df.dtypes
+Q2
+#include<stdlib.h>
+#include<mpi.h>
+
+#define ARRAY_SIZE 10
+
+int main(int argc,char*argv[])
+{
+int rank,size;
+int i,sum=0;
+int data[ARRAY_SIZE];
+
+MPI_Init(&argc,&argv);
+MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+MPI_Comm_size(MPI_COMM_WORLD,&size);
+
+if(rank==0)
+{
+ printf("Generating random data...\n");
+for(i=0;i<ARRAY_SIZE;i++)
+{
+data[i]=rand()%100;
+printf("The array is:%d\n",data[i]);
+}
+}
+int chunk_size=ARRAY_SIZE;
+int *chunk=(int*)malloc(chunk_size*sizeof(int));
+
+MPI_Scatter(data,chunk_size,MPI_INT,chunk,chunk_size,MPI_INT,0,MPI_COMM_WORLD);
+
+
+int local_sum=0;
+for(i=0;i<chunk_size;i++)
+{
+local_sum +=data[i];
+printf("The local sum is:%d\n",local_sum);
+}
+
+MPI_Reduce(&local_sum,&sum,1,MPI_INT,MPI_SUM,0,MPI_COMM_WORLD);
+
+if(rank==0)
+{
+printf("The final sum is:%d\n",sum);
+}
+free(chunk);
+MPI_Finalize():
+return 0;
+}
 
